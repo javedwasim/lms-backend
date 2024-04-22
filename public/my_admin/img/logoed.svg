@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="181" height="85" viewBox="0 0 181 85">
+  <defs>
+    <filter id="Rectangle_10" x="0" y="0" width="85" height="85" filterUnits="userSpaceOnUse">
+      <feOffset dy="3" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feFlood flood-opacity="0.149"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_10-2" x="0" y="0" width="85" height="85" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="5" result="blur-2"/>
+      <feFlood flood-opacity="0.149" result="color"/>
+      <feComposite operator="out" in="SourceGraphic" in2="blur-2"/>
+      <feComposite operator="in" in="color"/>
+      <feComposite operator="in" in2="SourceGraphic"/>
+    </filter>
+    <filter id="Union_2" x="24.625" y="25.749" width="39.643" height="31.5" filterUnits="userSpaceOnUse">
+      <feOffset dx="4" dy="4" input="SourceAlpha"/>
+      <feGaussianBlur result="blur-3"/>
+      <feFlood flood-opacity="0.122"/>
+      <feComposite operator="in" in2="blur-3"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="logo" transform="translate(-461 9015)">
+    <g id="Group_4668" data-name="Group 4668" transform="translate(10 5)">
+      <g data-type="innerShadowGroup">
+        <g transform="matrix(1, 0, 0, 1, 451, -9020)" filter="url(#Rectangle_10)">
+          <rect id="Rectangle_10-3" data-name="Rectangle 10" width="55" height="55" rx="5" transform="translate(15 12)" fill="#fff"/>
+        </g>
+        <g transform="matrix(1, 0, 0, 1, 451, -9020)" filter="url(#Rectangle_10-2)">
+          <rect id="Rectangle_10-4" data-name="Rectangle 10" width="55" height="55" rx="5" transform="translate(15 12)" fill="#fff"/>
+        </g>
+      </g>
+      <g id="Group_1" data-name="Group 1" transform="translate(475.625 -8994.251)">
+        <g transform="matrix(1, 0, 0, 1, -24.63, -25.75)" filter="url(#Union_2)">
+          <path id="Union_2-2" data-name="Union 2" d="M-66.2-134.591a10.005,10.005,0,0,1-10.005-10h10.3a10,10,0,0,1,10,10Zm-25.342-14.1v-13.4a14.1,14.1,0,0,1,14.1,14.1v13.4A14.1,14.1,0,0,1-91.541-148.692Zm15.336-4.416a8.983,8.983,0,0,1,8.983-8.983v7.117a8.983,8.983,0,0,1-8.983,8.983Z" transform="translate(116.17 187.84)" fill="#18d9c8"/>
+        </g>
+      </g>
+    </g>
+    <text id="KuickBook" transform="translate(541 -8967)" fill="#fff" font-size="22" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">KuickBook</tspan></text>
+  </g>
+</svg>
