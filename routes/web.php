@@ -33,6 +33,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StripeController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\QuestionNoteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -148,7 +149,7 @@ Route::group(['middleware' => ['auth', 'verified', 'role:admin']], function () {
     Route::resource('paragraph', ParagraphController::class);
     Route::post('paragraph_status_update', [ParagraphController::class, 'status_update']);
     Route::get('paragraph_call_data', [ParagraphController::class, 'call_data']);
-
+    Route::resource('question_notes', QuestionNoteController::class);
     Route::resource('question', QuestionController::class);
     Route::get('questiontag', [QuestionController::class, 'questiontaglist']);
     Route::any('questiontag/add', [QuestionController::class, 'questiontagadd']);
