@@ -45,7 +45,6 @@ class QuestionNoteController extends Controller
         $request->validate([
             'quize_note' => 'required|string',
         ]);
-
         $questionNote->update($request->all());
 
         return redirect()->route('question_notes.index')
