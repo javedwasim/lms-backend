@@ -59,4 +59,13 @@ class QuestionNoteController extends Controller
         return redirect()->route('question_notes.index')
             ->with('success','Question Note deleted successfully');
     }
+
+    public function questionNote($id)
+    {
+        $note = QuestionNote::first();
+
+        return response()->json($note);
+
+    }
+
 }
