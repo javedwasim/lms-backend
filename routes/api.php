@@ -63,6 +63,7 @@ Route::get('courses/{course}/instructions', [CourseController::class, 'courseIns
 Route::get('page/{type}', [ApiController::class, 'getPageDetail']);
 Route::get('/user/{user_id}/tutorials/{tutorial_id}/notes', [TutorialNote::class, 'getUserTutorials']);
 Route::get('/user/{user_id}/tutorials/{tutorial_id}/comments', [VideoComment::class, 'getUserVideoComments']);
+Route::get('/question_notes/{id}', 'App\Http\Controllers\QuestionNoteController@questionNote');
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('carts', [CartController::class, 'index']);

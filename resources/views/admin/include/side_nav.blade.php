@@ -184,7 +184,7 @@ $linkk = \Request::segment(1);
                         </li>
                         <!-- <li class="nav-item ">
                          <a class="nav-link " href="./dashboards/automotive.html">
-                        
+
                             <span class="sidenav-normal"> Automotive </span>
                          </a>
                       </li>
@@ -236,7 +236,7 @@ $linkk = \Request::segment(1);
             </li>
 
 
-            <!-- 
+            <!--
     <li class="nav-item">
                    <a class="nav-link {{ $linkk == 'paragraph' ? 'active' : '' }}" href="{{ route('paragraph.index') }}">
                       <div class="text-center bg-white shadow icon icon-shape icon-sm border-radius-md me-2 d-flex align-items-center justify-content-center">
@@ -418,12 +418,16 @@ $linkk = \Request::segment(1);
                     <span class="nav-link-text ms-1">Report Issue</span>
                 </a>
             </li>
-
-
-
-
+            <li class="nav-item">
+                <a class="nav-link {{ $linkk == 'question-notes' ? 'active' : '' }}" href="{{ URL::to('/question_notes') }}">
+                    <div class="text-center bg-white shadow icon icon-shape icon-sm border-radius-md me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa fa-sticky-note fa_new_class"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Question Notes</span>
+                </a>
+            </li>
             {{-- <li class="nav-item">
-          
+
                <a data-bs-toggle="collapse" href="#mocktest" class="nav-link " aria-controls="mocktest" role="button" aria-expanded="false">
                   <div class="text-center bg-white shadow icon icon-shape icon-sm border-radius-md d-flex align-items-center justify-content-center me-2">
                      <i class="fa fa-book fa_new_class"></i>
@@ -432,7 +436,7 @@ $linkk = \Request::segment(1);
                </a>
                <div class="collapse " id="mocktest">
                   <ul class="nav ms-4 ps-3">
-                                    
+
                      <li class="nav-item">
                         <a class="nav-link {{ ($linkk=='mocktest') ? 'active' : ''}}" href="{{ url('mocktest/index') }}">
 
