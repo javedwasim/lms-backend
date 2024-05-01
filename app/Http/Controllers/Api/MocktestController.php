@@ -1252,7 +1252,17 @@ Log::info($request->current_question_id);
         $que_status_color = "red";
         $que_status_new = "";
 
-        $allQuestion = TempMocktestSrQuestion::where(['user_id' => $user_id, "mocktest_id" => $request->mocktest_id])->orderBy("sr_no")->get();
+        //$allQuestion = TempMocktestSrQuestion::where(['user_id' => $user_id, "mocktest_id" => $request->mocktest_id])->orderBy("sr_no")->get();
+        $allQuestion = TempMocktestSrQuestion::select('temp_mocktest_sr_questions.*')
+            ->join('attempt_mocktest_questions as mq', function ($join) use($user_id) {
+                $join->on('mq.category_id', '=', 'temp_mocktest_sr_questions.category_id')
+                    ->on('mq.mocktest_id', '=', 'temp_mocktest_sr_questions.mocktest_id')
+                    ->where('mq.user_id', $user_id);
+            })
+            ->where('temp_mocktest_sr_questions.mocktest_id', $request->mocktest_id)
+            ->orderByDesc('temp_mocktest_sr_questions.sr_no')
+            ->get();
+
         $resumeCategory = MocktestResume::where(['user_id' => $user_id, "mocktest_id" => $request->mocktest_id])->pluck("category_id");
 
         $newquery = $allQuestion;

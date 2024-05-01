@@ -28,6 +28,7 @@
                                     <td style="white-space: pre-line;">{{ $questionNote->quize_note }}</td>
                                     <td>
                                         <form action="{{ route('question_notes.destroy', $questionNote->id) }}" method="POST">
+
 {{--                                            <a class="btn btn-info" href="{{ route('question_notes.show', $questionNote->id) }}">Show</a>--}}
                                             <a class="btn btn-primary" href="{{ route('question_notes.edit', $questionNote->id) }}">Edit</a>
 {{--                                            @csrf--}}
