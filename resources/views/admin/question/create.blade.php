@@ -263,10 +263,6 @@
                             <input type="file" name="option_j_img" class="form-control" accept=".png, .jpg, .jpeg">
                         </div> --}}
                     </div>
-                    
-
-
-
 
                     <div class="col-md-6">
                         <div class="form-group">
@@ -346,7 +342,6 @@
                     </div>
                 </div>
                 <div class="row fil_ters">
-
                     <div class="col-md-6">
                         <label>Admin Tags</label>
                         <div class="form-group">
@@ -359,7 +354,19 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="row fil_ters">
+                    <div class="col-md-6">
+                        <label>Select Course</label>
+                        <div class="form-group">
+                            <select name="course_id" id="course_dt_id" class="form-control course" required>
+                                <option value="">Filter By Course</option>
+                                @foreach($courses as $courseVal)
+                                    <option value="{{ $courseVal->id }}">{{ $courseVal->course_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
                 <br />
                 <div class="row">
                     <div class="text-right col-xs-12 col-sm-12 col-md-12">
@@ -383,10 +390,10 @@
       /*   tinymce.init({
             selector: '#paragraph_id',
             menubar: false,
-         
+
             branding: false,
             statusbar: false,
-        
+
             height: "180"
         }); */
         tinymce.init({
@@ -466,7 +473,7 @@
             statusbar: false,
             height: "180"
         }); */
-        
+
       /*   tinymce.init({
             selector: '#explanation',
             menubar: false,
@@ -512,7 +519,7 @@
                 // filebrowserImageBrowseUrl: '/ckfinder/ckfinder.html?type=Images',
                 filebrowserUploadUrl: '{{url("uploadckeditorimage")}}?command=QuickUpload&type=Files&_token={{csrf_token()}}',
                 filebrowserImageUploadUrl: '{{url("uploadckeditorimage")}}?command=QuickUpload&type=Images&_token={{csrf_token()}}'
-        } );  
+        } );
          CKEDITOR.replace('question_id',{
                 extraPlugins: 'uploadimage',
                 // height: 300,
@@ -838,7 +845,7 @@
                'id': id
             },
             success: function(data) {
-               // elem = $(this).closest('div').find("select").html(); 
+               // elem = $(this).closest('div').find("select").html();
                str = '';
                for (const iterator of data) {
                   console.log(iterator);
