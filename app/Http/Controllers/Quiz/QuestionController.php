@@ -208,8 +208,8 @@ class QuestionController extends Controller
         $getSubCategory = SubCategory::where('status', '1')->orderBy('sub_category_name', 'asc')->get();
         $getParagraph = Paragraph::orderBy('paragraph', 'asc')->get();
         $adminTag = AdminTag::all();
-
-        return view('admin.question.create', compact('getCourse', 'getCategory', 'getSubCategory', 'getParagraph', 'adminTag', 'CourseType'));
+        $courses = Course::where("status", 1)->get();
+        return view('admin.question.create', compact('courses','getCourse', 'getCategory', 'getSubCategory', 'getParagraph', 'adminTag', 'CourseType'));
     }
 
     public function store(Request $request)
@@ -222,7 +222,8 @@ class QuestionController extends Controller
                     'paragraph' => 'required',
                     // 'question' => 'required',
 
-                    'sub_category' => 'required'
+                    'sub_category' => 'required',
+                    'course_id' => 'required',
                     //  'option_a' => 'required',
                     //  'option_b' => 'required',
                     // 'option_c' => 'required',
@@ -231,19 +232,17 @@ class QuestionController extends Controller
                 $this->validate($request, [
                     //  'course' => 'required',
                     'category' => 'required',
-
+                    'course_id' => 'required',
                 ]);
             }
         } else {
             $this->validate($request, [
                 'question_type' => 'required',
+                'course_id' => 'required',
             ]);
         }
-
         $input = $request->all();
-
         $res_data = [];
-
         $course = (isset($request->course)) ? implode(',', $request->course) : '';
         // $res_data['course_id'] = $course;
         $res_data['course_type_id'] = $request->course_type_id;
@@ -255,9 +254,9 @@ class QuestionController extends Controller
         $res_data['question_name'] = $request->question;
         $res_data['question_tags'] = $request->question_tags ?? '';
         $res_data['explanation'] = $request->explanation ?? '';
+        $res_data['course_id'] = $request->course_id ?? '';
 
         $di = !empty($request->record_id) ? $request->record_id : 0;
-
         $findAlready = QuestionAnswer::find($di);
         $question_img = !empty($findAlready->question_img) ? $findAlready->question_img : '';
         $option_a_img = !empty($findAlready->option_a_img) ? $findAlready->option_a_img : '';
@@ -276,7 +275,6 @@ class QuestionController extends Controller
             $media_img_path = $request->explanation_video->store('media', 's3');
             $res_data['explanation_video'] = Storage::disk('s3')->url($media_img_path);
         }
-
 
         if ($request->hasFile('question_img')) {
             $media_img_path = $request->question_img->store('question_images', 's3');
@@ -330,8 +328,6 @@ class QuestionController extends Controller
             $media_img_path = $request->paragraph_img->store('question_images', 's3');
             $res_data['paragraph_img'] =  Storage::disk('s3')->url($media_img_path) ?? $paragraph_img;
         }
-
-
         // question_img
         //option_a_img
         //  option_b_img
@@ -339,11 +335,6 @@ class QuestionController extends Controller
         // option_d_img
         // option_e_img
         // option_f_img
-
-
-
-
-
         if ($request->question_type == '1' || $request->question_type == '5') {
             $res_data['option_a'] = $request->option_a ?? '';
             $res_data['option_b'] = $request->option_b ?? '';
@@ -367,7 +358,6 @@ class QuestionController extends Controller
             // $crr->courses()->sync($request->course);
             $question_id = $request->record_id;
         } else {
-
             $crr = QuestionAnswer::create($res_data);
             // $crr->courses()->sync($request->course);
             $question_id = $crr->id;
@@ -398,7 +388,6 @@ class QuestionController extends Controller
 
         if ($request->question_type == '2' || $request->question_type == '3'  || $request->question_type == '4') {
             if (count($request->option) > 0) {
-
                 $option_ans = $request->option_answer;
                 foreach ($request->option as $op_key => $options) {
                     $options_dt = $options;
@@ -420,10 +409,6 @@ class QuestionController extends Controller
                 }
             }
         }
-
-
-
-
 
         if ($request->record_id) {
             return redirect()->back()->with('success', 'Question updated successfully');
