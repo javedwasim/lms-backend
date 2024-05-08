@@ -497,9 +497,9 @@ class QuestionController extends Controller
         $queOption = $crr->get();
 
         $option_answer_type = QueOptionAnswerType::where('question_id', $id)->get();
-
+        $courses = Course::where("status", 1)->get();
         $page_title = 'question';
-        return view('admin.question.edit', compact('page_title', 'getData', 'getCourse', 'getCategory', 'getSubCategory', 'getTutorial', 'queOption', 'option_answer_type', 'selectedCourseArr', 'adminTag', 'CourseType'));
+        return view('admin.question.edit', compact('courses','page_title', 'getData', 'getCourse', 'getCategory', 'getSubCategory', 'getTutorial', 'queOption', 'option_answer_type', 'selectedCourseArr', 'adminTag', 'CourseType'));
     }
 
     public function destroy($id)
