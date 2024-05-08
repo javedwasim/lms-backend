@@ -482,7 +482,7 @@
                     </div>
                     <div class="row fil_ters">
                         <div class="col-md-6">
-                            <label>Select Course{{$getData->course_id}}</label>
+                            <label>Select Course</label>
                             <div class="form-group">
                                 <select name="course_id" id="course_dt_id" class="form-control course" required>
                                     <option value="">Filter By Course</option>
