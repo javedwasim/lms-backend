@@ -116,6 +116,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::delete('tutorials/notes/{tutorialNote}', [TutorialController::class, 'destroy']); // delete_tutorial_note
     Route::post('tutorials/{tutorial}/bookmarks', [TutorialController::class, 'bookmark']); // add_tutorial_bookmark
     Route::post('tutorials/{tutorial}/watchlist', [TutorialController::class, 'storeTutorialWatchlist']); // add_watched_tutorial
+    Route::post('tutorials/{tutorial}/video-completed', [TutorialController::class, 'storeTutorialWatchlist']); // add_watched_tutorial
 
     Route::post('tests/make', [QuizController::class, 'makeTest']); // make_test x
     Route::post('tests/finish', [QuizController::class, 'finishTest']); // finish_test x
