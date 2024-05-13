@@ -20,6 +20,7 @@ use App\Models\User;
 use App\Models\VideoComment;
 use App\Models\WatchedTutorial;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TutorialController extends Controller
 {
@@ -398,7 +399,6 @@ class TutorialController extends Controller
         $category_id = $tutorial->category_id;
 
         $prevWatchedTutorial = WatchedTutorial::where(['user_id' => $user_id, 'course_id' => $course_id, 'category_id' => $category_id, 'tutorial_id' => $tutorial->id])->first(['id', 'total_video_time', 'watched_time']);
-
         $req_data['is_added'] = '0';
 
         $timeInSeconds = 0;
@@ -408,14 +408,22 @@ class TutorialController extends Controller
             $timeInSeconds =  $this->timeToSeconds($prevWatchedTutorial->total_video_time);
             $seventyPercentTime = (70 / 100) * $timeInSeconds;
         }
-
         $time = $request->watched_time;
 
         if ($request->watched_time >= $seventyPercentTime) {
             $time = $timeInSeconds;
         }
 
-        if ($prevWatchedTutorial->watched_time == $timeInSeconds) {
+        if (isset($prevWatchedTutorial->watched_time) && $prevWatchedTutorial->watched_time == $timeInSeconds) {
+            $time = 0;
+        }
+
+        Log::info('request:'.json_encode($request->all()));
+        if (isset($request->watched_time) && empty($prevWatchedTutorial)) {
+            $time = $request->watched_time;
+        }elseif($prevWatchedTutorial->watched_time != $request->watched_time){
+            $time = $request->watched_time;
+        }elseif($prevWatchedTutorial->watched_time === $request->watched_time){
             $time = 0;
         }
 
