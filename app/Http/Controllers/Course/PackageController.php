@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Course;
 
 use App\Http\Controllers\Controller;
 use App\Models\PackageQuestion;
+use App\Models\PackageTutorial;
 use Illuminate\Http\Request;
 use App\Models\Package;
 use App\Models\Course;
@@ -685,6 +686,7 @@ class PackageController extends Controller
         $assign_type = $request->assign_type;
         $page_type = $request->page_type;
         $assing_queArr = $request->assign_que_id;
+        $assing_queArr = array_keys($assing_queArr);;
 
         if ($assign_type == "question") {
             if ($page_type == "package") {
@@ -743,8 +745,32 @@ class PackageController extends Controller
         }
         if ($assign_type == "tutorial") {
             if ($page_type == "package") {
-                Package::where('id', $request->record_id)->first()->tutorials()->sync($assing_queArr);
+//                Package::where('id', $request->record_id)->first()->tutorials()->sync($assing_queArr);
+                $package = Package::find($request->record_id);
+                $saveAssignIds = explode(',', $package->assign_tutorial_id);
+                $differenceArray = array_diff($assing_queArr, $saveAssignIds);
+                Log::info('$assing_queArr' . json_encode($assing_queArr));
+                Log::info('$saveAssignIds' . json_encode($saveAssignIds));
+                if(!empty($differenceArray)) {
+                    $assingQueArrString = implode(',', $differenceArray);
+                    $assingQueArrString .= $package->assign_tutorial_id;
+                    Log::info('$assingQueArrString' . json_encode($assingQueArrString));
+                    $package->assign_tutorial_id = $assingQueArrString;
+                    $package->save();
+                }
 
+                $existingTutorials = PackageTutorial::where('package_id', $request->record_id)
+                                        ->pluck('tutorial_id')
+                                        ->toArray();
+                $differenceArray = array_diff($assing_queArr, $existingTutorials);
+                if(!empty($differenceArray)){
+                    foreach ($differenceArray as $tutorial_id) {
+                        PackageTutorial::create([
+                            'package_id' => $request->record_id,
+                            'tutorial_id' => $tutorial_id
+                        ]);
+                    }
+                }
                 return redirect()->back()->with('success', 'Tutorial assigned successfully');
             } else if ($page_type == "test") {
 

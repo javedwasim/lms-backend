@@ -9,6 +9,7 @@ use App\Http\Resources\CourseTypeResource;
 use App\Models\AttemptQuestion;
 use App\Models\Course;
 use App\Models\OrderDetail;
+use Illuminate\Support\Facades\Log;
 
 class CourseController extends Controller
 {
