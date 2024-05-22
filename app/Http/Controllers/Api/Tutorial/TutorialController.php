@@ -20,7 +20,6 @@ use App\Models\User;
 use App\Models\VideoComment;
 use App\Models\WatchedTutorial;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class TutorialController extends Controller
@@ -159,7 +158,7 @@ class TutorialController extends Controller
         $category_id = $category->id;
 
         $tutArr = [];
-        //DB::enableQueryLog();
+
         $buy_tutorial_ids = Order::leftjoin('order_detail', 'order_detail.order_id', '=', 'order_tbl.id')->leftjoin('package_tbl', 'package_tbl.id', '=', 'order_detail.package_id')
             ->where(['order_detail.particular_record_id' => $course_id, 'order_detail.package_for' => '1'])
             ->where('order_detail.expiry_date', '>', date('Y-m-d H:m:s'))
@@ -167,8 +166,6 @@ class TutorialController extends Controller
             ->pluck('package_tbl.assign_tutorial_id')->join(',');
 
         $buyTutIdArr = (!empty($buy_tutorial_ids)) ? explode(',', $buy_tutorial_ids) : [];
-        //Log::info('$buyTutIdArr'.json_encode($buyTutIdArr));
-        //Log::info(DB::getQueryLog());
 
         $is_plan_exist = (count($buyTutIdArr) > 0) ? '1' : '0';
 
@@ -421,6 +418,7 @@ class TutorialController extends Controller
             $time = 0;
         }
 
+        Log::info('request:'.json_encode($request->all()));
         if (isset($request->watched_time) && empty($prevWatchedTutorial)) {
             $time = $request->watched_time;
         }elseif($prevWatchedTutorial->watched_time != $request->watched_time){
