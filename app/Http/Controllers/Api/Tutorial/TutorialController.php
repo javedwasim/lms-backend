@@ -418,7 +418,6 @@ class TutorialController extends Controller
             $time = 0;
         }
 
-        Log::info('request:'.json_encode($request->all()));
         if (isset($request->watched_time) && empty($prevWatchedTutorial)) {
             $time = $request->watched_time;
         }elseif($prevWatchedTutorial->watched_time != $request->watched_time){
@@ -436,7 +435,10 @@ class TutorialController extends Controller
             'watched_time' => $time,
         ];
 
-        if (isset($prevWatchedTutorial->id)) {
+        if(($time == 0) && isset($prevWatchedTutorial->id)){
+            WatchedTutorial::where(['id' => $prevWatchedTutorial->id])->delete();
+        }
+        elseif (isset($prevWatchedTutorial->id) && $time>0) {
             WatchedTutorial::where(['id' => $prevWatchedTutorial->id])->update($newWatchedTutorial);
         } else {
             WatchedTutorial::create($newWatchedTutorial);
