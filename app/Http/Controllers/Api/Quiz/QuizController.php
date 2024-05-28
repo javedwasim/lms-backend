@@ -14,10 +14,100 @@ use App\Models\TempBeforeFinishTest;
 use App\Models\TempSrQuestion;
 use App\Models\TempTest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class QuizController extends Controller
 {
+//    public function applyfilter(Request $request)
+//    {
+//        $request->validate([
+//            'course_id' => 'required',
+//            'subcategoryIds' => 'required',
+//            'questionsCount' => 'required',
+//            'filter' => 'required',
+//        ]);
+//
+//        $subcategoryIds = $request->subcategoryIds;
+//        $questionsCount = $request->questionsCount;
+//        $filter = $request->filter;
+//        $course_id = $request->course_id;
+//
+//        $user_id = auth()->user()->id;
+//
+//        // check if user has bought the plan
+//        $userOrderDetails = OrderDetail::where(['particular_record_id' => $course_id, 'package_for' => '1'])->with([
+//            'order' => function ($query) use ($user_id) {
+//                $query->where('user_id', $user_id);
+//            }
+//        ])->get();
+//
+//        if (!empty($userOrderDetails)) {
+//            $planPurchased = true;
+//        } else {
+//            $planPurchased = false;
+//        }
+//
+//        if (!$planPurchased) {
+//            $testModeQuestionIds = AssignQuestion::where('course_id', $course_id)->pluck('question_id')->toArray();
+//        }
+//
+//        // fetch all the questions for the given subcategory ids
+//        $allSelectedQuestionIdsQuery = QuestionAnswer::whereHas(
+//            'courses',
+//            function ($query) use($course_id){
+//                $query->where('course_id', $course_id);
+//            }
+//        )->whereIn('sub_category_ids', $subcategoryIds)->where('status', 1);
+//
+//        if (!$planPurchased) {
+//            $allSelectedQuestionIdsQuery->whereIn('id', $testModeQuestionIds);
+//        }
+//
+//        $allSelectedQuestionIds = $allSelectedQuestionIdsQuery->pluck('id')->toArray();
+//
+//        if ($filter == 'all') {
+//            $selectedQuestionIds = $allSelectedQuestionIds;
+//        } else if ($filter == 'new') {
+//            $attemptedQuestionIds = AttemptQuestion::where(['user_id' => $user_id, 'course_id' => $course_id])->whereIn('sub_category_ids', $subcategoryIds)->pluck('question_id')->toArray();
+//
+//            $selectedQuestionIds = array_diff($allSelectedQuestionIds, $attemptedQuestionIds);
+//        } else if ($filter == 'newAndIncorrect') {
+//            $correctAttemptedQuestionIds = AttemptQuestion::where(['user_id' => $user_id, 'course_id' => $course_id, 'is_correct' => 1])->whereIn('sub_category_ids', $subcategoryIds)->pluck('question_id')->toArray();
+//
+//            $selectedQuestionIds = array_diff($allSelectedQuestionIds, $correctAttemptedQuestionIds);
+//        }
+//
+//        // randomly pick values from the array
+//        $questionsCount = max(0, min($questionsCount, count($selectedQuestionIds)));
+//
+//        $randomKeys = array_rand($selectedQuestionIds, $questionsCount);
+//        $randomQuestionIds = [];
+//
+//        foreach ((array) $randomKeys as $key) {
+//            $randomQuestionIds[] = $selectedQuestionIds[$key];
+//        }
+//
+//        $questionsStr = implode(',', $randomQuestionIds);
+//
+//        $existingTempTest = TempBeforeFinishTest::where(['user_id' => $user_id])->first();
+//
+//        if (isset($existingTempTest->id)) {
+//            TempBeforeFinishTest::where(['user_id' => $user_id])->delete();
+//        }
+//
+//        // create new test in temp test for the user
+//        $tempTest =  [
+//            'user_id' => $user_id,
+//            'questions_id' => $questionsStr,
+//            'is_practice' => 0,
+//        ];
+//
+//        TempBeforeFinishTest::create($tempTest);
+//
+//        return response()->json(['selectedQuestionIds' => $randomQuestionIds]);
+//    }
+
     public function applyfilter(Request $request)
     {
         $request->validate([
@@ -31,7 +121,6 @@ class QuizController extends Controller
         $questionsCount = $request->questionsCount;
         $filter = $request->filter;
         $course_id = $request->course_id;
-
         $user_id = auth()->user()->id;
 
         // check if user has bought the plan
@@ -47,47 +136,19 @@ class QuizController extends Controller
             $planPurchased = false;
         }
 
-        if (!$planPurchased) {
-            $testModeQuestionIds = AssignQuestion::where('course_id', $course_id)->pluck('question_id')->toArray();
-        }
-
-        // fetch all the questions for the given subcategory ids
-        $allSelectedQuestionIdsQuery = QuestionAnswer::whereHas(
-            'courses',
-            function ($query) use($course_id){
-                $query->where('course_id', $course_id);
-            }
-        )->whereIn('sub_category_ids', $subcategoryIds)->where('status', 1);
-
-        if (!$planPurchased) {
-            $allSelectedQuestionIdsQuery->whereIn('id', $testModeQuestionIds);
-        }
-
-        $allSelectedQuestionIds = $allSelectedQuestionIdsQuery->pluck('id')->toArray();
+        $questionList = $this->getSubCategoriesQuestionsList($request, $planPurchased);
 
         if ($filter == 'all') {
-            $selectedQuestionIds = $allSelectedQuestionIds;
+            $selectedQuestionIds = $questionList['selectedQuestionIds'] ?? [];
         } else if ($filter == 'new') {
             $attemptedQuestionIds = AttemptQuestion::where(['user_id' => $user_id, 'course_id' => $course_id])->whereIn('sub_category_ids', $subcategoryIds)->pluck('question_id')->toArray();
 
-            $selectedQuestionIds = array_diff($allSelectedQuestionIds, $attemptedQuestionIds);
+            $selectedQuestionIds = array_diff($questionList['selectedQuestionIds'], $attemptedQuestionIds);
         } else if ($filter == 'newAndIncorrect') {
             $correctAttemptedQuestionIds = AttemptQuestion::where(['user_id' => $user_id, 'course_id' => $course_id, 'is_correct' => 1])->whereIn('sub_category_ids', $subcategoryIds)->pluck('question_id')->toArray();
 
-            $selectedQuestionIds = array_diff($allSelectedQuestionIds, $correctAttemptedQuestionIds);
+            $selectedQuestionIds = array_diff($questionList['selectedQuestionIds'], $correctAttemptedQuestionIds);
         }
-
-        // randomly pick values from the array
-        $questionsCount = max(0, min($questionsCount, count($selectedQuestionIds)));
-
-        $randomKeys = array_rand($selectedQuestionIds, $questionsCount);
-        $randomQuestionIds = [];
-
-        foreach ((array) $randomKeys as $key) {
-            $randomQuestionIds[] = $selectedQuestionIds[$key];
-        }
-
-        $questionsStr = implode(',', $randomQuestionIds);
 
         $existingTempTest = TempBeforeFinishTest::where(['user_id' => $user_id])->first();
 
@@ -98,13 +159,99 @@ class QuizController extends Controller
         // create new test in temp test for the user
         $tempTest =  [
             'user_id' => $user_id,
-            'questions_id' => $questionsStr,
+            'questions_id' => $questionList['questionStr'] ?? [],
             'is_practice' => 0,
         ];
 
         TempBeforeFinishTest::create($tempTest);
+        return response()->json(['selectedQuestionIds' => $selectedQuestionIds]);
+    }
 
-        return response()->json(['selectedQuestionIds' => $randomQuestionIds]);
+    public function getSubCategoriesQuestionsList($request, $planPurchased){
+        $subcategoryIds = $request->subcategoryIds;
+        $questionsCount = $request->questionsCount;
+        $filter = $request->filter;
+        $course_id = $request->course_id;
+        $user_id = auth()->user()->id;
+        $totalLimit = $request->questionsCount;
+        // Enable query logging
+        //DB::enableQueryLog();
+        // Fetch all questions and group them by subcategory
+        $questions = QuestionAnswer::whereHas('courses', function ($query) use ($course_id) {
+            $query->where('course_id', $course_id);
+        })->whereIn('sub_category_ids', $subcategoryIds)
+            ->where('status', 1)
+            ->whereNull('deleted_at')
+            //->orderBy('sub_category_ids')  // Order by subcategory to maintain order
+            ->get(['id', 'sub_category_ids'])
+            ->groupBy('sub_category_ids');
+
+        if (!$planPurchased) {
+            $testModeQuestionIds = AssignQuestion::where('course_id', $course_id)->pluck('question_id')->toArray();
+        }
+
+        if (!$planPurchased) {
+            $questions->whereIn('id', $testModeQuestionIds);
+        }
+        // Retrieve and log the executed queries
+        $executedQueries = DB::getQueryLog();
+        //Log::info('Executed Queries:', ['queries' => $executedQueries]);
+
+        $selectedQuestionIds = collect();
+        $remainingLimit = $totalLimit;
+
+        // Separate smaller and larger subcategories
+        $smallerSubcategories = [];
+        $largerSubcategories = [];
+        $accumulatedCount = 0;
+        foreach ($questions as $subcategoryId => $questionGroup) {
+            $questionGroupCount = count($questionGroup);
+            $accumulatedCount += $questionGroupCount;
+            //Log::info('$questionGroup'.count($questionGroup));
+            if ($accumulatedCount <= $remainingLimit) {
+                $smallerSubcategories[$subcategoryId] = $questionGroup;
+            } else {
+                $largerSubcategories[$subcategoryId] = $questionGroup;
+            }
+        }
+
+        // Select all questions from smaller subcategories
+        foreach ($smallerSubcategories as $subcategoryId => $questionGroup) {
+            $selectedQuestionIds = $selectedQuestionIds->merge($questionGroup->pluck('id'));
+            $remainingLimit -= count($questionGroup);
+
+        }
+        //Log::info('$remainingLimitc'.($remainingLimit));
+        //Log::info('$selectedQuestionIds'.json_encode($selectedQuestionIds));
+        //Distribute the remaining limit among the larger subcategories
+        if ($remainingLimit > 0 && count($largerSubcategories) > 0) {
+            $remainingSubcategoriesCount = count($largerSubcategories);
+            //Log::info('$remainingSubcategoriesCount'.$remainingSubcategoriesCount);
+            $limitPerSubcategory = floor($remainingLimit / $remainingSubcategoriesCount);
+            $extraLimit = $remainingLimit % $remainingSubcategoriesCount;
+
+            foreach ($largerSubcategories as $subcategoryId => $questionGroup) {
+                $selectedQuestionIds = $selectedQuestionIds->merge($questionGroup->take($limitPerSubcategory)->pluck('id'));
+                //Log::info('$largerSubcategories'.json_encode($questionGroup->take($limitPerSubcategory)->pluck('id')));
+                if ($extraLimit > 0) {
+                    $selectedQuestionIds = $selectedQuestionIds->merge($questionGroup->skip($limitPerSubcategory)->take(1)->pluck('id'));
+                    $extraLimit--;
+                }
+            }
+
+        }
+        // Now $selectedQuestionIds contains the desired set of question IDs, limited to 200
+        $selectedQuestionIds = $selectedQuestionIds->take($totalLimit);
+        $selectedQuestionIdsArray = $selectedQuestionIds->toArray();
+        $questionsStr = implode(',', $selectedQuestionIdsArray);
+        //TempBeforeFinishTest::create($tempTest);
+        //Log::info('$selectedQuestionIds'.json_encode($selectedQuestionIdsArray));
+        //Log::info('$questionsStr'.json_encode($questionsStr));
+        //return response()->json(['selectedQuestionIds' => $selectedQuestionIdsArray]);
+        return  [
+            'selectedQuestionIds' => $selectedQuestionIdsArray,
+            'questionStr' => $questionsStr,
+        ];
     }
 
     public function makeTest(Request $request)
@@ -422,7 +569,7 @@ class QuizController extends Controller
         TempTest::where(['user_id' => $user_id])->delete();
         TempBeforeFinishTest::where(['user_id' => $user_id])->delete();
         TempSrQuestion::where(['user_id' => $user_id])->delete();
-        
+
         AttemptQuestion::where(['user_id' => $user_id, 'is_practice' => 1])->delete();
 
         return response()->json([
