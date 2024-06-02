@@ -242,8 +242,10 @@ class QuizController extends Controller
         }
         // Now $selectedQuestionIds contains the desired set of question IDs, limited to 200
         $selectedQuestionIds = $selectedQuestionIds->take($totalLimit);
-        $selectedQuestionIdsArray = $selectedQuestionIds->toArray();
-        $questionsStr = implode(',', $selectedQuestionIdsArray);
+//        $selectedQuestionIdsArray = $selectedQuestionIds->toArray();
+//        $questionsStr = implode(',', $selectedQuestionIdsArray);
+        $selectedQuestionIdsArray = !empty($selectedQuestionIds) ? [] : $selectedQuestionIds->toArray();
+        $questionsStr = !empty($selectedQuestionIdsArray) ? [] : implode(',', $selectedQuestionIdsArray);
         //TempBeforeFinishTest::create($tempTest);
         //Log::info('$selectedQuestionIds'.json_encode($selectedQuestionIdsArray));
         //Log::info('$questionsStr'.json_encode($questionsStr));
