@@ -72,7 +72,7 @@ class CourseController extends Controller
                         });
                     },
                     'watched_tutorials' => function ($query) use($course_id) {
-                        $query->where(['user_id' => auth()->user()->id, 'course_id' != $course_id]);
+                        $query->where(['user_id' => auth()->user()->id, 'course_id' => $course_id]);
                     },
                 ]);
             },
