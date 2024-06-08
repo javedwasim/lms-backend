@@ -142,11 +142,9 @@ class QuizController extends Controller
             $selectedQuestionIds = $questionList['selectedQuestionIds'] ?? [];
         } else if ($filter == 'new') {
             $attemptedQuestionIds = AttemptQuestion::where(['user_id' => $user_id, 'course_id' => $course_id])->whereIn('sub_category_ids', $subcategoryIds)->pluck('question_id')->toArray();
-
-            $selectedQuestionIds = array_diff($questionList['selectedQuestionIds'], $attemptedQuestionIds);
+            $selectedQuestionIds = array_values(array_diff($questionList['selectedQuestionIds'], $attemptedQuestionIds));
         } else if ($filter == 'newAndIncorrect') {
             $correctAttemptedQuestionIds = AttemptQuestion::where(['user_id' => $user_id, 'course_id' => $course_id, 'is_correct' => 1])->whereIn('sub_category_ids', $subcategoryIds)->pluck('question_id')->toArray();
-
             $selectedQuestionIds = array_diff($questionList['selectedQuestionIds'], $correctAttemptedQuestionIds);
         }
 
@@ -174,8 +172,6 @@ class QuizController extends Controller
         $course_id = $request->course_id;
         $user_id = auth()->user()->id;
         $totalLimit = $request->questionsCount;
-        // Enable query logging
-        //DB::enableQueryLog();
         // Fetch all questions and group them by subcategory
         $questions = QuestionAnswer::whereHas('courses', function ($query) use ($course_id) {
             $query->where('course_id', $course_id);
@@ -193,9 +189,7 @@ class QuizController extends Controller
         if (!$planPurchased) {
             $questions->whereIn('id', $testModeQuestionIds);
         }
-        // Retrieve and log the executed queries
-        $executedQueries = DB::getQueryLog();
-        //Log::info('Executed Queries:', ['queries' => $executedQueries]);
+
 
         $selectedQuestionIds = collect();
         $remainingLimit = $totalLimit;
@@ -214,25 +208,19 @@ class QuizController extends Controller
                 $largerSubcategories[$subcategoryId] = $questionGroup;
             }
         }
-
         // Select all questions from smaller subcategories
         foreach ($smallerSubcategories as $subcategoryId => $questionGroup) {
             $selectedQuestionIds = $selectedQuestionIds->merge($questionGroup->pluck('id'));
             $remainingLimit -= count($questionGroup);
 
         }
-        //Log::info('$remainingLimitc'.($remainingLimit));
-        //Log::info('$selectedQuestionIds'.json_encode($selectedQuestionIds));
-        //Distribute the remaining limit among the larger subcategories
         if ($remainingLimit > 0 && count($largerSubcategories) > 0) {
             $remainingSubcategoriesCount = count($largerSubcategories);
-            //Log::info('$remainingSubcategoriesCount'.$remainingSubcategoriesCount);
             $limitPerSubcategory = floor($remainingLimit / $remainingSubcategoriesCount);
             $extraLimit = $remainingLimit % $remainingSubcategoriesCount;
 
             foreach ($largerSubcategories as $subcategoryId => $questionGroup) {
                 $selectedQuestionIds = $selectedQuestionIds->merge($questionGroup->take($limitPerSubcategory)->pluck('id'));
-                //Log::info('$largerSubcategories'.json_encode($questionGroup->take($limitPerSubcategory)->pluck('id')));
                 if ($extraLimit > 0) {
                     $selectedQuestionIds = $selectedQuestionIds->merge($questionGroup->skip($limitPerSubcategory)->take(1)->pluck('id'));
                     $extraLimit--;
@@ -244,10 +232,6 @@ class QuizController extends Controller
         $selectedQuestionIds = $selectedQuestionIds->take($totalLimit);
         $selectedQuestionIdsArray = $selectedQuestionIds->toArray();
         $questionsStr = implode(',', $selectedQuestionIdsArray);
-        //TempBeforeFinishTest::create($tempTest);
-        //Log::info('$selectedQuestionIds'.json_encode($selectedQuestionIdsArray));
-        //Log::info('$questionsStr'.json_encode($questionsStr));
-        //return response()->json(['selectedQuestionIds' => $selectedQuestionIdsArray]);
         return  [
             'selectedQuestionIds' => $selectedQuestionIdsArray,
             'questionStr' => $questionsStr,
