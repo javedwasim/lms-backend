@@ -153,12 +153,14 @@ class QuizController extends Controller
         if (isset($existingTempTest->id)) {
             TempBeforeFinishTest::where(['user_id' => $user_id])->delete();
         }
+
         // create new test in temp test for the user
         $tempTest =  [
             'user_id' => $user_id,
             'questions_id' => $questionList['questionStr'] ?? [],
             'is_practice' => 0,
         ];
+
         TempBeforeFinishTest::create($tempTest);
         return response()->json(['selectedQuestionIds' => $selectedQuestionIds]);
     }
@@ -176,6 +178,7 @@ class QuizController extends Controller
         })->whereIn('sub_category_ids', $subcategoryIds)
             ->where('status', 1)
             ->whereNull('deleted_at')
+            //->orderBy('sub_category_ids')  // Order by subcategory to maintain order
             ->get(['id', 'sub_category_ids'])
             ->groupBy('sub_category_ids');
 
@@ -198,6 +201,7 @@ class QuizController extends Controller
         foreach ($questions as $subcategoryId => $questionGroup) {
             $questionGroupCount = count($questionGroup);
             $accumulatedCount += $questionGroupCount;
+            //Log::info('$questionGroup'.count($questionGroup));
             if ($accumulatedCount <= $remainingLimit) {
                 $smallerSubcategories[$subcategoryId] = $questionGroup;
             } else {
@@ -210,7 +214,6 @@ class QuizController extends Controller
             $remainingLimit -= count($questionGroup);
 
         }
-        //Distribute the remaining limit among the larger subcategories
         if ($remainingLimit > 0 && count($largerSubcategories) > 0) {
             $remainingSubcategoriesCount = count($largerSubcategories);
             $limitPerSubcategory = floor($remainingLimit / $remainingSubcategoriesCount);
@@ -228,7 +231,6 @@ class QuizController extends Controller
         // Now $selectedQuestionIds contains the desired set of question IDs, limited to 200
         $selectedQuestionIds = $selectedQuestionIds->take($totalLimit);
         $selectedQuestionIdsArray = $selectedQuestionIds->toArray();
-
         $questionsStr = implode(',', $selectedQuestionIdsArray);
         return  [
             'selectedQuestionIds' => $selectedQuestionIdsArray,
@@ -249,9 +251,11 @@ class QuizController extends Controller
         $question_id = $request->question_id;
 
         $correct_option_json = "";
+
         $findAlreadyQuestionSaved = TempTest::where(['user_id' => $user_id, 'question_id' => $question_id])->first();
         $findAlreadyQuestionSaved_correct_option_json = $findAlreadyQuestionSaved->correct_option_json ?? '';
         $correct_option_json = !empty($request->correct_option_json) ? $request->correct_option_json : $findAlreadyQuestionSaved_correct_option_json;;
+
 
         $temp_before_finish_test = TempBeforeFinishTest::where('user_id', $user_id)->first();
         $all_filter_question_id = $temp_before_finish_test->questions_id;
@@ -265,12 +269,15 @@ class QuizController extends Controller
             TempBeforeFinishTest::create($new_temp_before_finish_test);
         }
 
+
         $question = QuestionAnswer::where('id', $question_id)->first();
+
         $course_id = $question->course_id;
         $tutorial_id = $question->tutorial_id;
         $category_id = $question->category_id;
         $sub_category_ids = $question->sub_category_ids;
         $question_type = $question->question_type;
+
 
         if ($question_type == 2 || $question_type == 3 || $question_type == 4) {
             $option_decode = json_decode($correct_option_json);
